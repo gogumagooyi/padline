@@ -3,101 +3,118 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#100c19">
-<title>Padline · Rhythm Grid</title>
+<meta name="theme-color" content="#0a1015">
+<title>Rhythm Grid · Padline</title>
 <link rel="stylesheet" href="style.css">
 <script src="game.js" defer></script>
 </head>
 <body>
-<main id="launch" aria-labelledby="launch-title">
-  <img class="launch-skyline" src="sunset.svg" alt="">
+<header class="app-bar">
+  <div class="app-bar-inner">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Padline</div>
+    <span class="screen-name" id="screen-name">Title screen</span>
+    <button id="sound" class="sound-button" type="button" aria-label="Mute sound" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path class="waves" d="M16 8q4 4 0 8m3-11q7 7 0 14"/><path class="mute-x" d="m16 9 6 6m0-6-6 6"/></svg>
+      <span class="on">Sound on</span><span class="off">Sound off</span>
+    </button>
+  </div>
+</header>
+<main id="launch" class="menu-screen title-screen" aria-labelledby="launch-title">
   <div class="launch-content">
     <div class="launch-heading">
-    <div class="launch-brand">PADLINE</div>
-    <h1 id="launch-title" tabindex="-1"><img src="title.svg" alt="Rhythm Grid"></h1>
-    <p class="launch-instruction">Play each glowing pad with its row and column keys.</p>
+      <p class="eyebrow"><i aria-hidden="true"></i>4 × 4 rhythm game</p>
+      <h1 id="launch-title" tabindex="-1">Rhythm <em>Grid</em></h1>
+      <p class="launch-lede">Play two-key chords in time with the beat.</p>
     </div>
-    <button id="launch-start" type="button"><span class="play-icon" aria-hidden="true"></span>Start</button>
-    <p class="launch-hint">or press <kbd>Enter</kbd></p>
+    <button id="launch-start" class="start-command" type="button" aria-label="Start"><span class="play-icon" aria-hidden="true"></span>Start <kbd aria-hidden="true">Enter</kbd></button>
   </div>
+  <footer class="input-guide" aria-label="Controls">
+    <div><span>Row keys</span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd></div>
+    <b aria-hidden="true">+</b>
+    <div><span>Column keys</span><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>;</kbd></div>
+    <p>Press a row and column together.</p>
+  </footer>
 </main>
-<main id="mode-screen" aria-labelledby="mode-title" hidden>
-  <img class="launch-skyline" src="sunset.svg" alt="">
-  <button id="modes-back" class="previous menu-back" type="button" aria-label="Back to start">Back</button>
-  <div class="mode-menu">
-    <div class="launch-brand">PADLINE</div>
-    <h1 id="mode-title" tabindex="-1">Select a mode</h1>
+<main id="mode-screen" class="menu-screen select-screen" aria-labelledby="mode-title" hidden>
+  <div class="selection-shell">
+    <button id="modes-back" class="previous" type="button" aria-label="Back to start">Back</button>
+    <p class="eyebrow"><i aria-hidden="true"></i>Main menu</p>
+    <h1 class="section-title" id="mode-title" tabindex="-1">Select a <em>mode</em></h1>
     <div class="mode-options">
-      <button class="mode-card" id="normal-mode" type="button" aria-labelledby="normal-label" aria-describedby="normal-detail">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 2h9v9H2zM13 2h9v9h-9zM2 13h9v9H2zM13 13h9v9h-9z"/></svg>
-        <strong id="normal-label">Normal Mode</strong>
-        <span id="normal-detail">2 songs · 30 sec each</span>
+      <button class="mode-row normal" id="normal-mode" type="button" aria-labelledby="normal-label" aria-describedby="normal-detail">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h8v8H2zM13 1h8v8h-8zM2 14h8v8H2zM13 12h8v8h-8z"/></svg>
+        <span class="row-text"><strong id="normal-label">Normal Mode</strong><small id="normal-detail">Play a 30-second track on the pad grid.</small></span>
+        <span class="play-icon row-end" aria-hidden="true"></span>
       </button>
-      <button class="mode-card" id="competitive-mode" type="button" aria-labelledby="competitive-label" aria-describedby="competitive-detail">
+      <button class="mode-row competitive" id="competitive-mode" type="button" aria-labelledby="competitive-label" aria-describedby="competitive-detail">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5 2h14v2h4v6h-2v2h-4v2h-2v2h-2v4h5v2H6v-2h5v-4H9v-2H7v-2H3v-2H1V4h4zm0 4H3v3h2zm14 0v3h2V6z"/></svg>
-        <strong id="competitive-label">Competitive Mode</strong>
-        <span id="competitive-detail">In development</span>
+        <span class="row-text"><strong id="competitive-label">Competitive Mode</strong><small id="competitive-detail">In development</small></span>
       </button>
-      <button class="mode-card" id="hard-mode" type="button" aria-labelledby="hard-label" aria-describedby="hard-detail">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1h8v3h-2v3h-2v3h5v3h-3v3h-3v3h-3v3H9v-6H3v-3h3v-3h2V7h2V4h2z"/></svg>
-        <strong id="hard-label">Hard Mode</strong>
-        <span id="hard-detail">In development</span>
+      <button class="mode-row hard" id="hard-mode" type="button" aria-labelledby="hard-label" aria-describedby="hard-detail">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 1h8l-6 9h7L7 24l3-10H2z"/></svg>
+        <span class="row-text"><strong id="hard-label">Hard Mode</strong><small id="hard-detail">In development</small></span>
       </button>
     </div>
-    <p id="mode-message" role="status" aria-live="polite" aria-atomic="true"></p>
+    <p id="mode-message" role="status" aria-live="polite" aria-atomic="true"></p><div class="menu-keys" aria-label="Menu shortcuts"><span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span><span><kbd>Enter</kbd> Select</span><span><kbd>Esc</kbd> Back</span></div>
   </div>
 </main>
-<main id="song-screen" aria-labelledby="song-title" hidden>
-  <button id="songs-back" class="previous menu-back" type="button" aria-label="Back to modes">Back</button>
-  <div class="song-menu">
-    <div class="current-mode">Normal Mode</div>
-    <h1 id="song-title" tabindex="-1">Select a song</h1>
+<main id="song-screen" class="menu-screen select-screen" aria-labelledby="song-title" hidden>
+  <div class="selection-shell song-shell">
+    <button id="songs-back" class="previous" type="button" aria-label="Back to modes">Back</button>
+    <p class="eyebrow"><i aria-hidden="true"></i>Normal Mode</p>
+    <h1 class="section-title" id="song-title" tabindex="-1">Select a <em>track</em></h1>
     <div class="song-options">
-      <button type="button" class="song-card" id="song-neon-skyline" aria-label="Play Neon Skyline" aria-describedby="neon-detail">
-        <img src="sunset.svg" alt="">
-        <span class="song-info"><strong>Neon Skyline</strong><span id="neon-detail">120 BPM · 0:30</span></span>
-        <span class="song-play" aria-hidden="true"><span class="play-icon"></span></span>
+      <button class="song-card neon" id="song-neon-skyline" type="button" aria-label="Play Neon Skyline" aria-describedby="neon-detail">
+        <img id="art-neon-skyline" src="neon-skyline.webp" alt="">
+        <span class="song-copy"><strong>Neon Skyline</strong><span id="neon-detail">120 BPM <i></i> 0:30</span></span><span class="song-play" aria-hidden="true"><i class="play-icon"></i></span>
       </button>
-      <button type="button" class="song-card" id="song-afterglow" aria-label="Play Afterglow" aria-describedby="afterglow-detail">
-        <img class="afterglow-art" src="sunset.svg" alt="">
-        <span class="song-info"><strong>Afterglow</strong><span id="afterglow-detail">100 BPM · 0:30</span></span>
-        <span class="song-play" aria-hidden="true"><span class="play-icon"></span></span>
+      <button class="song-card ember" id="song-afterglow" type="button" aria-label="Play Afterglow" aria-describedby="afterglow-detail">
+        <img id="art-afterglow" src="afterglow.webp" alt="">
+        <span class="song-copy"><strong>Afterglow</strong><span id="afterglow-detail">100 BPM <i></i> 0:30</span></span><span class="song-play" aria-hidden="true"><i class="play-icon"></i></span>
       </button>
     </div>
+    <div class="menu-keys" aria-label="Menu shortcuts"><span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span><span><kbd>Enter</kbd> Select</span><span><kbd>Esc</kbd> Back</span></div>
   </div>
 </main>
 <div id="game-screen" hidden>
-<header><div class="topbar">
-<div class="brand"><svg aria-hidden="true" viewBox="0 0 30 30" width="28" height="28"><g fill="#e7ff93"><path d="M0 4h12v12H0zM16 0h12v12H16zM0 20h12v10H0zM16 16h12v12H16z"/></g></svg>PADLINE</div>
-<div class="game-actions"><button id="game-back" class="previous" type="button" aria-label="Back to songs">Songs</button>
-<button id="sound" aria-label="Mute sound" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path class="waves" d="M16 8q4 4 0 8m3-11q7 7 0 14"/><path class="mute-x" d="m16 9 6 6m0-6-6 6"/></svg><span class="on">Sound on</span><span class="off">Sound off</span></button></div>
-</div></header>
-<main id="game-board" tabindex="-1">
-<div class="intro"><div class="current-mode">Normal Mode</div><h1><img src="title.svg" alt="Rhythm Grid"></h1><p>When a pad glows, press its row and column keys together.</p></div>
-<div class="layout">
-<section class="board panel" aria-label="Rhythm pad controller">
-<div class="boardhead"><span class="section-name"><i class="grid-icon"></i>PAD MATRIX</span><span class="ready"><i></i><span id="status">Ready</span></span></div>
-<div id="pads" role="group" aria-label="Note grid, row by column"></div>
-<div class="chord-controls">
-  <div><span id="rows-label">Rows</span><div id="row-keys" role="group" aria-labelledby="rows-label"></div></div>
-  <div><span id="cols-label">Columns</span><div id="column-keys" role="group" aria-labelledby="cols-label"></div></div>
-</div>
-<div id="transport"><div class="tracktime"><span>TRACK PROGRESS</span><span id="time">0:00 / 0:30</span></div><div class="rail"><div id="progress"></div></div></div>
-</section>
-<aside>
-<section class="track panel"><div class="section-name"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 14V5l8-2v9M8 7l8-2"/><ellipse cx="5.5" cy="14.5" rx="2.5" ry="2"/><ellipse cx="13.5" cy="12.5" rx="2.5" ry="2"/></svg>CURRENT TRACK</div>
-<div class="cover"><img src="sunset.svg" alt="Pixel art of a neon sunset over a futuristic city"><span class="bpm" id="track-bpm">120 BPM</span></div>
-<div class="trackdesc"><div><h2 id="track-title">Neon Skyline</h2><p>Synthwave <span>•</span> 0:30</p></div><div class="equalizer" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></div></div>
-</section>
-<section class="stats panel" aria-label="Session stats"><div class="section-name"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16V10h2v6zm6 0V4h2v12zm6 0V7h2v9z"/></svg>SESSION STATS</div>
-<div class="scoreline"><span>Score</span><strong id="score">000000</strong></div>
-<div class="pair"><div><span>Combo</span><b id="combo">0×</b></div><div><span>Accuracy</span><b id="accuracy">—</b></div></div>
-<div class="best"><span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3h8v4q0 5-4 5T6 7zM6 5H3v2q0 3 4 3m7-5h3v2q0 3-4 3m-3 2v3m-3 2h6"/></svg>Personal best</span><b id="best">000000</b></div>
-</section>
-<button id="start"><span class="play-icon" aria-hidden="true"></span><span id="start-label">Start game</span></button>
-<p id="feedback" role="status">Try S + K for (2,2). On touchscreens, tap both keys together.</p>
-</aside>
-</div>
-</main>
+  <main id="game-board" aria-labelledby="game-title" tabindex="-1">
+    <div class="game-heading"><div>
+      <span class="game-mode">Normal mode</span>
+      <h1 id="game-title">Rhythm grid</h1>
+    </div><button id="game-back" class="previous" type="button" aria-label="Back to songs">Back to songs</button>
+    </div>
+    <div class="game-layout">
+      <section class="matrix-panel" aria-label="Rhythm pad controller">
+        <div class="matrix-heading"><h2>Pad matrix</h2><span class="game-status"><i aria-hidden="true"></i><span id="status">Ready</span></span></div>
+        <div class="controller">
+          <div class="axis-junction" aria-hidden="true"><i></i></div>
+          <span id="rows-label" class="game-sr-only">Row keys</span>
+          <span id="cols-label" class="game-sr-only">Column keys</span>
+          <div id="column-keys" role="group" aria-labelledby="cols-label"></div>
+          <div id="row-keys" role="group" aria-labelledby="rows-label"></div>
+          <div id="pads" role="group" aria-label="Note grid, row by column"></div>
+        </div>
+        <div class="judge-line"><p id="feedback" role="status" aria-live="polite" aria-atomic="true">Try S + K for row 2, column 2.</p></div>
+        <p class="matrix-help">Press or touch both highlighted edge keys together.</p>
+      </section>
+      <section class="game-stats" aria-label="Session stats">
+        <div class="score-section"><h2>Score</h2><strong id="score">000000</strong></div>
+        <dl class="game-metrics"><div><dt>Combo</dt><dd id="combo">0×</dd></div><div><dt>Accuracy</dt><dd id="accuracy">—</dd></div></dl>
+        <div class="personal-best"><span>Personal best</span><b id="best">000000</b></div>
+      </section>
+      <section class="game-track" aria-label="Current track">
+        <div class="cover"><img id="track-art" src="neon-skyline.webp" alt=""></div>
+        <div class="track-info">
+          <p class="track-caption">Current track</p><h2 id="track-title">Neon Skyline</h2>
+          <span id="track-bpm">120 BPM</span>
+        </div>
+        <div id="transport">
+          <div class="track-timing"><span>Progress</span><span id="time">0:00 / 0:30</span></div>
+          <div class="track-rail"><div id="progress"></div></div>
+        </div>
+      </section>
+      <div class="game-transport"><button id="start" type="button"><span class="play-icon" aria-hidden="true"></span><span id="start-label">Start game</span></button></div>
+    </div>
+  </main>
 </div>
 </body></html>

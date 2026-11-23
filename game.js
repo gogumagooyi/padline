@@ -66,6 +66,7 @@
     best = Math.max(track.sessionBest || 0, Number(readSetting(track.bestKey)) || 0);
     get('track-title').textContent = track.title;
     get('track-bpm').textContent = track.bpm + ' BPM';
+    get('track-art').src = get('art-' + slug).src;
     renderStats();
     return true;
   }
@@ -93,7 +94,9 @@
     if (!press) return;
     held.delete(input);
     const stillHeld = [...held.values()].some(other => other.key === press.key);
-    controls.get(press.key).classList.toggle('held', stillHeld);
+    const control = controls.get(press.key);
+    control.classList.toggle('held', stillHeld);
+    control.setAttribute('aria-pressed', String(stillHeld));
   }
 
   function resetControls() {
@@ -104,6 +107,7 @@
     if (phase !== 'playing' || held.has(input)) return;
     held.set(input, { key, time: performance.now(), used: false });
     controls.get(key).classList.add('held');
+    controls.get(key).setAttribute('aria-pressed', 'true');
     if (held.size !== 2) return;
     const pair = [...held.values()];
     const row = pair.find(p => rows.includes(p.key));
@@ -119,6 +123,7 @@
       const control = document.createElement('button');
       control.type = 'button';
       control.textContent = key;
+      control.setAttribute('aria-pressed', 'false');
       control.setAttribute('aria-label', `${id === 'row-keys' ? 'Row' : 'Column'} ${keys.indexOf(key) + 1}, key ${key}`);
       control.addEventListener('pointerdown', event => {
         if (event.button !== 0) return;
@@ -267,8 +272,19 @@
     return chart;
   }
 
+  function markTarget(index, on) {
+    pads[index].classList.toggle('lit', on);
+    controls.get(rows[Math.floor(index / columns.length)]).classList.toggle('target', on);
+    controls.get(columns[index % columns.length]).classList.toggle('target', on);
+  }
+
+  function showFeedback(text, tone = '') {
+    get('feedback').dataset.tone = tone;
+    get('feedback').textContent = text;
+  }
+
   function clearActive() {
-    if (active) pads[active.pad].classList.remove('lit');
+    if (active) markTarget(active.pad, false);
     active = null;
   }
 
@@ -277,7 +293,7 @@
       clearActive();
       attempts++;
       combo = 0;
-      get('feedback').textContent = 'Miss';
+      showFeedback('Miss', 'miss');
       renderStats();
     }
     while (nextNote < notes.length && elapsed >= notes[nextNote].at - lead) {
@@ -288,7 +304,7 @@
         renderStats();
       } else {
         active = note;
-        pads[note.pad].classList.add('lit');
+        markTarget(note.pad, true);
       }
     }
   }
@@ -306,7 +322,7 @@
       combo++;
       const points = (perfect ? 100 : 60) + Math.min(combo - 1, 20) * 5;
       score += points;
-      get('feedback').textContent = `${perfect ? 'Perfect' : 'Good'} +${points}`;
+      showFeedback(`${perfect ? 'Perfect' : 'Good'} +${points}`);
       clearActive();
       const pad = pads[index];
       pad.classList.add('hit');
@@ -317,7 +333,7 @@
       }
     } else {
       combo = 0;
-      get('feedback').textContent = 'Off beat';
+      showFeedback('Off beat', 'miss');
     }
     renderStats();
   }
@@ -338,7 +354,7 @@
     }
     if (complete) renderTime(duration);
     get('status').textContent = complete ? 'Round complete' : 'Stopped';
-    get('feedback').textContent = complete ? (record ? 'New best score!' : `${hits} / ${notes.length} notes hit`) : 'Round stopped';
+    showFeedback(complete ? (record ? 'New best score!' : `${hits} / ${notes.length} notes hit`) : 'Round stopped');
     get('start-label').textContent = 'Play again';
     renderStats();
   }
@@ -351,7 +367,7 @@
       const count = Math.ceil(-elapsed / beat);
       if (count !== lastCount) {
         lastCount = count;
-        get('feedback').textContent = `Starting in ${count}`;
+        showFeedback(`Starting in ${count}`);
       }
     } else {
       if (phase === 'countdown') {
@@ -359,7 +375,7 @@
         document.body.classList.remove('countdown');
         document.body.classList.add('playing');
         get('status').textContent = 'Playing';
-        get('feedback').textContent = 'Play the glowing pair';
+        showFeedback('Play the glowing pair');
       }
       syncNotes(elapsed);
       renderTime(elapsed);
@@ -432,6 +448,9 @@
     get(page.screen).hidden = false;
     currentUrl = url;
     document.title = page.title + ' · Padline';
+    get('screen-name').textContent = page.slug ? 'Game board' : {
+      '#start': 'Title screen', '#modes': 'Mode select', '#songs/normal': 'Track select'
+    }[url];
     get('mode-message').textContent = '';
 
     if (page.slug) {
@@ -441,7 +460,7 @@
       renderStats();
       renderTime(0);
       get('status').textContent = 'Ready';
-      get('feedback').textContent = initialFeedback;
+      showFeedback(initialFeedback);
       get('start-label').textContent = 'Start game';
       if (startRound) begin();
     }
@@ -489,13 +508,29 @@
     renderSound();
   });
   document.addEventListener('keydown', event => {
-    if (!get('launch').hidden && event.key === 'Enter' && !event.isComposing &&
-        !event.metaKey && !event.ctrlKey && !event.altKey) {
+    if (event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
+    const inModes = currentUrl === '#modes';
+    const inSongs = currentUrl === '#songs/normal';
+    if ((inModes || inSongs) && event.key === 'Escape') {
+      event.preventDefault();
+      if (!event.repeat) goBack(inModes ? '#start' : '#modes');
+      return;
+    }
+    if ((inModes || inSongs) && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      const ids = inModes ? ['normal-mode', 'competitive-mode', 'hard-mode'] : [...tracks.keys()].map(slug => 'song-' + slug);
+      const offset = event.key === 'ArrowUp' || event.key === 'ArrowLeft' ? -1 : 1;
+      const index = ids.indexOf(document.activeElement?.id);
+      const next = index < 0 ? (offset > 0 ? 0 : ids.length - 1) : (index + offset + ids.length) % ids.length;
+      event.preventDefault();
+      get(ids[next]).focus();
+      return;
+    }
+    if (!get('launch').hidden && event.key === 'Enter' && event.target !== get('sound')) {
       event.preventDefault();
       if (!event.repeat) navigate('#modes');
       return;
     }
-    if (phase !== 'playing' || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (phase !== 'playing') return;
     const key = event.key.toUpperCase();
     if (!controls.has(key)) return;
     event.preventDefault();
