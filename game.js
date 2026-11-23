@@ -336,15 +336,27 @@
     animate();
   }
 
-  function enterGame() {
+  function showModes() {
     if (get('launch').hidden) return;
     get('launch').hidden = true;
+    get('mode-screen').hidden = false;
+    get('mode-title').focus({ preventScroll: true });
+  }
+
+  get('launch-start').addEventListener('click', showModes);
+  get('normal-mode').addEventListener('click', () => {
+    if (get('mode-screen').hidden) return;
+    get('mode-screen').hidden = true;
     get('game-screen').hidden = false;
     get('game-board').focus({ preventScroll: true });
     begin();
+  });
+  for (const [id, name] of [['competitive-mode', 'Competitive Mode'], ['hard-mode', 'Hard Mode']]) {
+    get(id).addEventListener('click', () => {
+      get('mode-message').textContent = name + ' is currently under development.';
+    });
   }
 
-  get('launch-start').addEventListener('click', enterGame);
   get('start').addEventListener('click', () => {
     if (phase === 'playing' || phase === 'countdown') finish(false);
     else begin();
@@ -359,7 +371,7 @@
     if (!get('launch').hidden && event.key === 'Enter' && !event.isComposing &&
         !event.metaKey && !event.ctrlKey && !event.altKey) {
       event.preventDefault();
-      if (!event.repeat) enterGame();
+      if (!event.repeat) showModes();
       return;
     }
     if (phase !== 'playing' || event.metaKey || event.ctrlKey || event.altKey) return;
