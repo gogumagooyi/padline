@@ -7,14 +7,27 @@
   const chordWindow = 120;
   const held = new Map();
   const controls = new Map();
-  const beat = 500;
   const duration = 30000;
-  const countIn = 3 * beat;
   const lead = 130;
   const tail = 300;
-  const bestKey = 'padline.best.v1';
   const muteKey = 'padline.mute.v1';
-  const pitches = [261.63, 293.66, 329.63, 392, 440, 392, 329.63, 293.66];
+  const tracks = new Map([
+    ['neon-skyline', {
+      title: 'Neon Skyline', bpm: 120, bestKey: 'padline.best.v1',
+      pitches: [261.63, 293.66, 329.63, 392, 440, 392, 329.63, 293.66],
+      rhythm: [[0, 2], [0, 1.5, 3], [0, 2], [0, 1, 2, 3]],
+      playStep: playNeonSkyline
+    }],
+    ['afterglow', {
+      title: 'Afterglow', bpm: 100, bestKey: 'padline.best.afterglow.v1',
+      pitches: [293.66, 349.23, 440, 523.25, 392, 349.23, 329.63, 261.63],
+      rhythm: [[0, 1.5, 3], [0, 2], [0, 1, 2.5], [0, 2, 3]],
+      playStep: playAfterglow
+    }]
+  ]);
+  let track = tracks.get('neon-skyline');
+  let beat = 60000 / track.bpm;
+  let countIn = 3 * beat;
   const initialFeedback = get('feedback').textContent;
 
   function readSetting(key) {
@@ -25,7 +38,7 @@
     try { localStorage.setItem(key, String(value)); } catch { /* Private sessions can play in memory. */ }
   }
 
-  let best = Math.max(0, Number(readSetting(bestKey)) || 0);
+  let best = Math.max(0, Number(readSetting(track.bestKey)) || 0);
   let muted = readSetting(muteKey) === 'true';
   let phase = 'idle';
   let startTime = 0;
@@ -43,6 +56,19 @@
   let frame = 0;
   let lastCount = 0;
   const flashes = new Map();
+
+  function selectTrack(slug) {
+    const selected = tracks.get(slug);
+    if (!selected) return false;
+    track = selected;
+    beat = 60000 / track.bpm;
+    countIn = 3 * beat;
+    best = Math.max(track.sessionBest || 0, Number(readSetting(track.bestKey)) || 0);
+    get('track-title').textContent = track.title;
+    get('track-bpm').textContent = track.bpm + ' BPM';
+    renderStats();
+    return true;
+  }
 
   const pads = Array.from({ length: rows.length * columns.length }, (_, index) => {
     const row = Math.floor(index / columns.length);
@@ -177,6 +203,38 @@
     source.stop(at + length);
   }
 
+  function playNeonSkyline(at, step) {
+    const pitches = track.pitches;
+    percussion(at, 6500, 0.04, step % 2 ? 0.10 : 0.07);
+    if (step % 2 === 0) tone(at, 135, 0.16, 0.8, 'sine', 43);
+    if (step % 4 === 2) percussion(at, 1300, 0.105, 0.23);
+    if (step % 4 === 0 || step % 8 === 5) {
+      tone(at, pitches[Math.floor(step / 8) % pitches.length] / 4, 0.21, 0.32, 'triangle');
+    }
+    if (step % 4 === 0 || step % 8 === 6) {
+      tone(at, pitches[(Math.floor(step / 2) + Math.floor(step / 8)) % pitches.length], 0.18, 0.16, 'triangle');
+    }
+  }
+
+  function playAfterglow(at, step) {
+    const bar = Math.floor(step / 8);
+    const subdivision = step % 8;
+    const root = [73.42, 58.27, 87.31, 65.41][bar % 4];
+    if (subdivision === 0 || subdivision === 5) {
+      tone(at, 105, 0.24, 0.66, 'sine', 42);
+      tone(at, root, 0.42, 0.32, 'triangle');
+    }
+    if (subdivision % 2 === 1) percussion(at, 5800, 0.065, 0.08);
+    if (subdivision === 4) percussion(at, 1700, 0.12, 0.27);
+    const accents = track.rhythm[bar % track.rhythm.length];
+    const accent = accents.indexOf(subdivision / 2);
+    if (accent >= 0) {
+      const pitch = track.pitches[(bar * 2 + accent) % track.pitches.length];
+      tone(at, pitch, 0.34, 0.24, 'sine');
+      tone(at, pitch * 3, 0.10, 0.07, 'sine');
+    }
+  }
+
   // Schedule a short distance ahead so audio stays steady between animation frames.
   function scheduleMusic(elapsed) {
     const eighth = beat / 2;
@@ -189,15 +247,7 @@
         if (step % 2 === 0) tone(at, 720, 0.07, 0.14);
         continue;
       }
-      percussion(at, 6500, 0.04, step % 2 ? 0.10 : 0.07);
-      if (step % 2 === 0) tone(at, 135, 0.16, 0.8, 'sine', 43);
-      if (step % 4 === 2) percussion(at, 1300, 0.105, 0.23);
-      if (step % 4 === 0 || step % 8 === 5) {
-        tone(at, pitches[Math.floor(step / 8) % pitches.length] / 4, 0.21, 0.32, 'triangle');
-      }
-      if (step % 4 === 0 || step % 8 === 6) {
-        tone(at, pitches[(Math.floor(step / 2) + Math.floor(step / 8)) % pitches.length], 0.18, 0.16, 'triangle');
-      }
+      track.playStep(at, step);
     }
   }
 
@@ -205,7 +255,7 @@
     const chart = [];
     let lastPad = -1;
     for (let bar = 0; bar * 4 * beat < duration; bar++) {
-      const rhythm = bar % 4 === 3 ? [0, 1, 2, 3] : bar % 2 ? [0, 1.5, 3] : [0, 2];
+      const rhythm = track.rhythm[bar % track.rhythm.length];
       for (const offset of rhythm) {
         const at = (bar * 4 + offset) * beat;
         if (at + tail >= duration) continue;
@@ -262,7 +312,9 @@
       pad.classList.add('hit');
       clearTimeout(flashes.get(index));
       flashes.set(index, setTimeout(() => pad.classList.remove('hit'), 125));
-      if (audio && audio.state === 'running' && !muted) tone(audio.currentTime, pitches[index % 8] * 2, 0.07, 0.12);
+      if (audio && audio.state === 'running' && !muted) {
+        tone(audio.currentTime, track.pitches[index % track.pitches.length] * 2, 0.07, 0.12);
+      }
     } else {
       combo = 0;
       get('feedback').textContent = 'Off beat';
@@ -281,7 +333,8 @@
     const record = complete && score > best;
     if (record) {
       best = score;
-      writeSetting(bestKey, best);
+      track.sessionBest = best;
+      writeSetting(track.bestKey, best);
     }
     if (complete) renderTime(duration);
     get('status').textContent = complete ? 'Round complete' : 'Stopped';
@@ -336,21 +389,89 @@
     animate();
   }
 
-  function showModes() {
-    if (get('launch').hidden) return;
-    get('launch').hidden = true;
-    get('mode-screen').hidden = false;
-    get('mode-title').focus({ preventScroll: true });
+  const pages = new Map([
+    ['#start', { screen: 'launch', focus: 'launch-title', title: 'Rhythm Grid' }],
+    ['#modes', { screen: 'mode-screen', focus: 'mode-title', title: 'Select a mode' }],
+    ['#songs/normal', { screen: 'song-screen', focus: 'song-title', title: 'Select a song' }]
+  ]);
+  for (const [slug, track] of tracks) {
+    const url = '#play/normal/' + slug;
+    pages.set(url, { screen: 'game-screen', focus: 'game-board', title: track.title, slug });
+    get('song-' + slug).addEventListener('click', () => navigate(url, true));
+  }
+  let currentUrl = null;
+
+  function leaveGame() {
+    if (phase === 'playing' || phase === 'countdown') finish(false);
+    // Closing the context also stops sounds already scheduled for the next beat.
+    if (audio) {
+      audio.close().catch(() => {});
+      audio = master = noise = null;
+    }
+    for (const [index, timer] of flashes) {
+      clearTimeout(timer);
+      pads[index].classList.remove('hit');
+    }
+    flashes.clear();
+    document.body.classList.remove('finished');
+    phase = 'idle';
   }
 
-  get('launch-start').addEventListener('click', showModes);
-  get('normal-mode').addEventListener('click', () => {
-    if (get('mode-screen').hidden) return;
-    get('mode-screen').hidden = true;
-    get('game-screen').hidden = false;
-    get('game-board').focus({ preventScroll: true });
-    begin();
-  });
+  function showPage(startRound = false) {
+    let url = location.hash;
+    if (!pages.has(url)) {
+      url = '#start';
+      history.replaceState(null, '', url);
+    }
+    if (url === currentUrl) return;
+    const previous = pages.get(currentUrl);
+    const page = pages.get(url);
+    if (previous?.slug) leaveGame();
+    if (previous) get(previous.screen).hidden = true;
+    else get('launch').hidden = true;
+    get(page.screen).hidden = false;
+    currentUrl = url;
+    document.title = page.title + ' · Padline';
+    get('mode-message').textContent = '';
+
+    if (page.slug) {
+      selectTrack(page.slug);
+      get('game-screen').classList.toggle('afterglow', page.slug === 'afterglow');
+      score = combo = hits = attempts = 0;
+      renderStats();
+      renderTime(0);
+      get('status').textContent = 'Ready';
+      get('feedback').textContent = initialFeedback;
+      get('start-label').textContent = 'Start game';
+      if (startRound) begin();
+    }
+    get(page.focus).focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
+  function navigate(url, startRound = false) {
+    if (currentUrl === url) return;
+    history.pushState({ from: currentUrl }, '', url);
+    showPage(startRound);
+  }
+
+  function goBack(parentUrl) {
+    if (history.state?.from === parentUrl) {
+      history.back();
+    } else {
+      // A bookmarked page can be the first entry in this tab.
+      history.replaceState(null, '', parentUrl);
+      showPage();
+    }
+  }
+
+  window.addEventListener('popstate', () => showPage());
+  window.addEventListener('hashchange', () => showPage());
+  get('launch-start').addEventListener('click', () => navigate('#modes'));
+  get('normal-mode').addEventListener('click', () => navigate('#songs/normal'));
+  get('modes-back').addEventListener('click', () => goBack('#start'));
+  get('songs-back').addEventListener('click', () => goBack('#modes'));
+  get('game-back').addEventListener('click', () => goBack('#songs/normal'));
   for (const [id, name] of [['competitive-mode', 'Competitive Mode'], ['hard-mode', 'Hard Mode']]) {
     get(id).addEventListener('click', () => {
       get('mode-message').textContent = name + ' is currently under development.';
@@ -371,7 +492,7 @@
     if (!get('launch').hidden && event.key === 'Enter' && !event.isComposing &&
         !event.metaKey && !event.ctrlKey && !event.altKey) {
       event.preventDefault();
-      if (!event.repeat) showModes();
+      if (!event.repeat) navigate('#modes');
       return;
     }
     if (phase !== 'playing' || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -389,4 +510,5 @@
   renderStats();
   renderTime(0);
   renderSound();
+  showPage();
 })();

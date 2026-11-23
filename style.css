@@ -68,7 +68,7 @@ h2{margin:0;font-size:22px;line-height:1.1;letter-spacing:-.5px}
 .chord-controls button{padding:0;min-height:42px;background:#30243e;border:1px solid #705785;border-radius:4px;color:#f3e5ff;font:700 16px/1 var(--mono);touch-action:none;user-select:none;-webkit-user-select:none}
 .chord-controls button.held{background:var(--lime);color:#252b16;border-color:var(--lime)}
 @media(max-width:380px){.chord-controls{gap:8px}.pad-key{font-size:19px}}
-#launch, #mode-screen {
+#launch, #mode-screen, #song-screen {
   --skyline-height: clamp(9rem, 42svh, 34rem);
   position: relative;
   isolation: isolate;
@@ -87,7 +87,7 @@ h2{margin:0;font-size:22px;line-height:1.1;letter-spacing:-.5px}
     #120e1e;
 }
 
-#launch[hidden], #mode-screen[hidden] { display: none; }
+#launch[hidden], #mode-screen[hidden], #song-screen[hidden] { display: none; }
 
 #launch .launch-content {
   position: relative;
@@ -209,22 +209,22 @@ h2{margin:0;font-size:22px;line-height:1.1;letter-spacing:-.5px}
   #launch .launch-heading { padding-bottom: .85rem; }
 }
 
-#mode-screen {
+#mode-screen, #song-screen {
   --skyline-height: clamp(6rem, 27svh, 18rem);
   place-items: center;
-  padding: 2rem 1.25rem;
+  padding: 5rem 1.25rem;
 }
 .mode-menu {
   position: relative;
   width: min(100%, 48rem);
   text-align: center;
 }
-#mode-title {
+#mode-title, #song-title {
   margin: 1.15rem 0 1.75rem;
   font: 800 clamp(2rem, 5vw, 3.5rem)/1.05 var(--mono);
   letter-spacing: -.065em;
 }
-#mode-title:focus { outline: none; }
+#mode-title:focus, #song-title:focus, #launch-title:focus { outline: none; }
 .mode-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
 .mode-card {
   display: grid;
@@ -250,6 +250,53 @@ h2{margin:0;font-size:22px;line-height:1.1;letter-spacing:-.5px}
 .mode-card:active { transform: translateY(2px); }
 #mode-message { min-height: 3em; margin: 1.25rem 0 0; color: #f3defe; font: 1rem/1.5 var(--mono); }
 .current-mode { margin: 0 0 .65rem; color: var(--lime); font: 700 .8125rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: .12em; }
+.previous {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 38px;
+  padding: .45rem .8rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #211b2c;
+  color: #e7deef;
+  font-size: .875rem;
+  font-weight: 600;
+}
+.previous::before { content: ""; width: .45rem; height: .45rem; border: solid currentColor; border-width: 0 0 2px 2px; transform: rotate(45deg); }
+.previous:hover { border-color: #ad91bc; }
+.menu-back { position: absolute; top: clamp(1rem, 4vw, 2rem); left: clamp(1rem, 4vw, 2rem); z-index: 1; }
+.game-actions { display: flex; align-items: center; gap: .6rem; }
+.song-menu { width: min(100%, 42rem); text-align: center; }
+.song-options { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.song-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #705482;
+  border-bottom: 4px solid #55405f;
+  border-radius: .6rem;
+  color: #f8edff;
+  background: #251d31;
+  box-shadow: 0 4px #100b18;
+  text-align: left;
+}
+.song-card:hover, .song-card:focus-visible { border-color: var(--lime); }
+.song-card img { width: 100%; aspect-ratio: 2.25; object-fit: cover; grid-column: 1 / -1; border-bottom: 1px solid var(--line); }
+.afterglow-art, .afterglow .cover img { filter: hue-rotate(118deg) saturate(.8); }
+.song-info { display: grid; gap: .4rem; padding: 1.1rem; }
+.song-info strong { font-size: 1.35rem; }
+.song-info > span { color: #d3c4dd; font: .875rem var(--mono); }
+.song-play { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; color: #242919; background: var(--lime); margin-right: 1rem; }
+@media (max-width: 36rem) {
+  .song-menu { max-width: 22rem; }
+  .song-options { grid-template-columns: 1fr; }
+  .song-card img { aspect-ratio: 3.2; }
+  .song-info { padding: .8rem 1rem; }
+  .game-actions { gap: .35rem; }
+}
 @media (max-width: 40rem) {
   .mode-menu { max-width: 25rem; }
   .mode-options { grid-template-columns: 1fr; }

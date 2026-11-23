@@ -1,12 +1,26 @@
 # Padline
 
-Padline is a 4×4 rhythm game with a 30-second synthesized soundtrack. Press a glowing pad’s row and column keys together in time with the beat to score points and build a combo.
+Padline is a 4×4 rhythm game with two synthesized tracks. Press a glowing pad’s row and column keys together in time with the beat to score points and build a combo.
 
 ## Play locally
 
-Download and extract the project, then open `index.html` in a browser. Press **Enter** or select **Start** to open the mode menu. Choose **Normal Mode** and follow the count-in. Selecting another mode displays a message that it is under development.
+Download and extract the project, then open `index.html` in a browser. Press **Enter** or select **Start** to open the mode menu. Choose **Normal Mode**, then pick **Neon Skyline** (120 BPM) or **Afterglow** (100 BPM). Selecting a track starts its count-in. The other modes display an under-development message.
 
 The game runs entirely in the browser, including its synthesized audio and local personal-best score.
+
+## Screen links
+
+Each screen has its own URL fragment. Append a fragment to the game URL to open that screen directly. Browser Back and Forward move through the screens you visited.
+
+| Screen | URL fragment |
+| --- | --- |
+| Start | `#start` |
+| Mode selection | `#modes` |
+| Normal Mode song selection | `#songs/normal` |
+| Neon Skyline game board | `#play/normal/neon-skyline` |
+| Afterglow game board | `#play/normal/afterglow` |
+
+Opening a game board directly loads the track and waits for you to select **Start**.
 
 ## Controls
 
