@@ -336,6 +336,15 @@
     animate();
   }
 
+  function enterGame() {
+    if (get('launch').hidden) return;
+    get('launch').hidden = true;
+    get('game-screen').hidden = false;
+    get('game-board').focus({ preventScroll: true });
+    begin();
+  }
+
+  get('launch-start').addEventListener('click', enterGame);
   get('start').addEventListener('click', () => {
     if (phase === 'playing' || phase === 'countdown') finish(false);
     else begin();
@@ -347,6 +356,12 @@
     renderSound();
   });
   document.addEventListener('keydown', event => {
+    if (!get('launch').hidden && event.key === 'Enter' && !event.isComposing &&
+        !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      if (!event.repeat) enterGame();
+      return;
+    }
     if (phase !== 'playing' || event.metaKey || event.ctrlKey || event.altKey) return;
     const key = event.key.toUpperCase();
     if (!controls.has(key)) return;

@@ -9,11 +9,24 @@
 <script src="game.js" defer></script>
 </head>
 <body>
+<main id="launch" aria-labelledby="launch-title">
+  <img class="launch-skyline" src="sunset.svg" alt="">
+  <div class="launch-content">
+    <div class="launch-heading">
+    <div class="launch-brand">PADLINE</div>
+    <h1 id="launch-title"><img src="title.svg" alt="Rhythm Grid"></h1>
+    <p class="launch-instruction">Play each glowing pad with its row and column keys.</p>
+    </div>
+    <button id="launch-start" type="button"><span class="play-icon" aria-hidden="true"></span>Start</button>
+    <p class="launch-hint">or press <kbd>Enter</kbd></p>
+  </div>
+</main>
+<div id="game-screen" hidden>
 <header><div class="topbar">
 <div class="brand"><svg aria-hidden="true" viewBox="0 0 30 30" width="28" height="28"><g fill="#e7ff93"><path d="M0 4h12v12H0zM16 0h12v12H16zM0 20h12v10H0zM16 16h12v12H16z"/></g></svg>PADLINE</div>
 <button id="sound" aria-label="Mute sound" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path class="waves" d="M16 8q4 4 0 8m3-11q7 7 0 14"/><path class="mute-x" d="m16 9 6 6m0-6-6 6"/></svg><span class="on">Sound on</span><span class="off">Sound off</span></button>
 </div></header>
-<main>
+<main id="game-board" tabindex="-1">
 <div class="intro"><h1><img src="title.svg" alt="Rhythm Grid"></h1><p>When a pad glows, press its row and column keys together.</p></div>
 <div class="layout">
 <section class="board panel" aria-label="Rhythm pad controller">
@@ -40,4 +53,5 @@
 </aside>
 </div>
 </main>
+</div>
 </body></html>

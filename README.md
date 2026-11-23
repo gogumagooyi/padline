@@ -4,7 +4,7 @@ Padline is a 4×4 rhythm game with a 30-second synthesized soundtrack. Press a g
 
 ## Play locally
 
-Download and extract the project, then open `index.html` in a browser. Select **Start game** and follow the count-in. The game runs entirely in the browser, including its synthesized audio and local personal-best score.
+Download and extract the project, then open `index.html` in a browser. Press **Enter** or select **Start**, then follow the count-in. The game runs entirely in the browser, including its synthesized audio and local personal-best score.
 
 ## Controls
 
