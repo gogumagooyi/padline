@@ -11,6 +11,10 @@
   const lead = 130;
   const tail = 300;
   const muteKey = 'padline.mute.v1';
+  const volumeKey = 'padline.volume.v1';
+  const settingsButton = get('settings');
+  const settingsPanel = get('settings-panel');
+  const volumeInput = get('volume');
   const tracks = new Map([
     ['neon-skyline', {
       title: 'Neon Skyline', bpm: 120, bestKey: 'padline.best.v1',
@@ -40,6 +44,8 @@
 
   let best = Math.max(0, Number(readSetting(track.bestKey)) || 0);
   let muted = readSetting(muteKey) === 'true';
+  const savedVolume = Number(readSetting(volumeKey) ?? 100);
+  let volume = Number.isFinite(savedVolume) ? Math.max(0, Math.min(100, Math.round(savedVolume))) : 100;
   let phase = 'idle';
   let startTime = 0;
   let score = 0;
@@ -152,15 +158,19 @@
     get('progress').style.width = `${Math.max(0, Math.min(100, elapsed / duration * 100))}%`;
   }
 
+  function outputGain() {
+    return muted ? 0 : 0.45 * volume / 100;
+  }
+
   function renderSound() {
     const control = get('sound');
     control.classList.toggle('muted', muted);
     control.setAttribute('aria-pressed', String(muted));
     control.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound');
     control.title = muted ? 'Unmute sound' : 'Mute sound';
-    const label = document.getElementById('sound-label');
-    if (label) label.textContent = muted ? 'Sound off' : 'Sound on';
-    if (master) master.gain.setTargetAtTime(muted ? 0 : 0.45, audio.currentTime, 0.012);
+    volumeInput.value = String(volume);
+    get('volume-level').textContent = volume + '%';
+    if (master) master.gain.setTargetAtTime(outputGain(), audio.currentTime, 0.012);
   }
 
   function unlockAudio() {
@@ -170,7 +180,7 @@
       if (!audio) {
         audio = new Context();
         master = audio.createGain();
-        master.gain.value = muted ? 0 : 0.45;
+        master.gain.value = outputGain();
         master.connect(audio.destination);
         noise = audio.createBuffer(1, Math.ceil(audio.sampleRate * 0.13), audio.sampleRate);
         const samples = noise.getChannelData(0);
@@ -440,6 +450,7 @@
       history.replaceState(null, '', url);
     }
     if (url === currentUrl) return;
+    if (!settingsPanel.hidden) setSettingsOpen(false);
     const previous = pages.get(currentUrl);
     const page = pages.get(url);
     if (previous?.slug) leaveGame();
@@ -507,8 +518,33 @@
     writeSetting(muteKey, muted);
     renderSound();
   });
+  function setSettingsOpen(open) {
+    settingsPanel.hidden = !open;
+    settingsButton.setAttribute('aria-expanded', String(open));
+    if (open) volumeInput.focus({ preventScroll: true });
+  }
+  settingsButton.addEventListener('click', () => setSettingsOpen(settingsPanel.hidden));
+  volumeInput.addEventListener('input', () => {
+    volume = volumeInput.valueAsNumber;
+    writeSetting(volumeKey, volume);
+    renderSound();
+  });
+  function dismissSettingsOutside(event) {
+    if (!settingsPanel.hidden && !get('settings-wrap').contains(event.target)) setSettingsOpen(false);
+  }
+  document.addEventListener('pointerdown', dismissSettingsOutside);
+  document.addEventListener('focusin', dismissSettingsOutside);
   document.addEventListener('keydown', event => {
     if (event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (!settingsPanel.hidden) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setSettingsOpen(false);
+        settingsButton.focus({ preventScroll: true });
+        return;
+      }
+      if (phase !== 'playing') return;
+    }
     const inModes = currentUrl === '#modes';
     const inSongs = currentUrl === '#songs/normal';
     if ((inModes || inSongs) && event.key === 'Escape') {
@@ -525,7 +561,7 @@
       get(ids[next]).focus();
       return;
     }
-    if (!get('launch').hidden && event.key === 'Enter' && event.target !== get('sound')) {
+    if (!get('launch').hidden && event.key === 'Enter' && event.target !== get('sound') && event.target !== settingsButton) {
       event.preventDefault();
       if (!event.repeat) navigate('#modes');
       return;
